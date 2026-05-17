@@ -915,6 +915,53 @@
   .pg-back-cover .bc-content { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; }
 
   /* MEDIA QUERIES (REMOVED: El escalado ahora maneja la responsividad) */
+  /* SIDE NAVIGATION BUTTONS */
+  .side-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 72px;
+    background: rgba(10, 10, 15, 0.45);
+    border: 1px solid var(--border);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 150;
+    transition: background 0.2s, color 0.2s, opacity 0.2s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .side-nav-btn:hover {
+    background: var(--dark3);
+    color: var(--accent);
+  }
+  .side-nav-btn:disabled {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .side-nav-btn.prev {
+    left: 0;
+    border-radius: 0 8px 8px 0;
+    border-left: none;
+  }
+  .side-nav-btn.next {
+    right: 0;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+  }
+  .side-nav-btn svg {
+    width: 28px;
+    height: 28px;
+  }
+  html[data-theme="light"] .side-nav-btn {
+    background: rgba(255, 255, 255, 0.6);
+  }
+  html[data-theme="light"] .side-nav-btn:hover {
+    background: var(--dark2);
+  }
 </style>
 </head>
 <body>
@@ -931,6 +978,12 @@
 </div>
 
 <div class="stage" id="stage">
+  <button class="side-nav-btn prev" id="side-prev-btn" onclick="turnPage(-1)" disabled aria-label="Página anterior">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  <button class="side-nav-btn next" id="side-next-btn" onclick="turnPage(1)" aria-label="Página siguiente">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
   <div class="book-wrapper" id="book-wrapper">
     <div class="book-scaler" id="book-scaler">
       <div class="book" id="book">
@@ -1943,6 +1996,12 @@ function updateDisplay() {
 
   document.getElementById('prev-btn').disabled = currentSpread === 0;
   document.getElementById('next-btn').disabled = currentSpread === totalSpreads - 1;
+
+  const sidePrev = document.getElementById('side-prev-btn');
+  if (sidePrev) sidePrev.disabled = currentSpread === 0;
+
+  const sideNext = document.getElementById('side-next-btn');
+  if (sideNext) sideNext.disabled = currentSpread === totalSpreads - 1;
 }
 
 function renderDots() {
