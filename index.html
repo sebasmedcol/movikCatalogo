@@ -22,21 +22,13 @@
     --off-white: #F5F5F0;
     --muted: rgba(255,255,255,0.45);
     --border: rgba(255,255,255,0.08);
-    /* Libro: encaja al ancho/alto útil de la pantalla (portátiles y desktop) */
-    --book-pad-x: 48px;
-    --book-chrome-y: 200px;
-    --page-w: max(300px, min(620px, calc((100vw - var(--book-pad-x)) / 2)));
-    --page-h: max(400px, min(820px, calc(100dvh - var(--book-chrome-y))));
+    /* Libro: tamaño base fijo, el escalado se manejará con JS/CSS transform */
+    --page-w: 460px;
+    --page-h: 660px;
     --body-bg: #060609;
     --book-shadow: rgba(0,0,0,0.8);
     --spine-mid: #1a1a2a;
     --checklist-fg: rgba(255,255,255,0.88);
-  }
-
-  @supports not (height: 100dvh) {
-    :root {
-      --page-h: max(400px, min(820px, calc(100vh - var(--book-chrome-y))));
-    }
   }
 
   html[data-theme="light"] {
@@ -134,23 +126,70 @@
   }
   .page-counter span { color: var(--white); font-weight: 500; }
 
-  /* STAGE */
+  /* STAGE & ZOOM WRAPPER */
   .stage {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(16px, 3vw, 40px) clamp(12px, 2.5vw, 28px) 14px;
-    perspective: 2400px;
-    perspective-origin: 50% 50%;
     width: 100%;
     max-width: 100vw;
     min-height: 0;
+    position: relative;
     box-sizing: border-box;
   }
+  .book-wrapper {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    cursor: grab;
+    position: relative;
+  }
+  .book-wrapper:active { cursor: grabbing; }
+  .book-scaler {
+    margin: auto; /* Centers the scaler when smaller than wrapper */
+    position: relative;
+    /* Width and height applied by JS */
+  }
+
+  /* ZOOM CONTROLS */
+  .zoom-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    background: var(--dark3);
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  html[data-theme="light"] .zoom-controls {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+  .zoom-btn {
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .zoom-btn:hover { background: rgba(255,255,255,0.1); }
+  html[data-theme="light"] .zoom-btn:hover { background: rgba(0,0,0,0.08); }
+
   .stage-hint {
-    margin-top: 18px;
+    margin: 0 auto 14px;
     max-width: min(760px, 92vw);
     text-align: center;
     font-size: 12px;
@@ -161,16 +200,19 @@
 
   /* BOOK */
   .book {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     display: flex;
-    width: min(calc(var(--page-w) * 2), calc(100vw - 16px));
+    width: calc(var(--page-w) * 2);
     height: var(--page-h);
-    max-width: 100%;
+    max-width: none;
     filter: drop-shadow(0 40px 80px var(--book-shadow));
     transform-style: preserve-3d;
+    perspective: 2400px;
     user-select: none;
     touch-action: pan-y;
-    cursor: pointer;
+    transform-origin: top left;
   }
   .book input, .book textarea { cursor: text; }
 
@@ -872,80 +914,7 @@
   }
   .pg-back-cover .bc-content { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; }
 
-  /* RESPONSIVE: tipografía y márgenes; el tamaño del libro sigue las variables fluidas */
-  @media (max-width: 1200px) {
-    :root {
-      --book-pad-x: 40px;
-      --book-chrome-y: 190px;
-    }
-    .cover-title { font-size: 68px; }
-    .pl-title { font-size: 46px; }
-    .pl-title small { font-size: 24px; }
-    .pl-price { font-size: 44px; }
-    .pl-hero { height: 148px; }
-    .pl-tight-hero .pl-hero { height: 118px; }
-    .pl-tight-hero .pl-title { font-size: 40px; }
-    .pl-tight-hero .pl-title small { font-size: 20px; }
-    .pl-tight-hero .pl-price { font-size: 38px; }
-  }
-  @media (max-width: 980px) {
-    :root {
-      --book-pad-x: 28px;
-      --book-chrome-y: 185px;
-    }
-    .cover-title { font-size: 58px; }
-    .pl-title { font-size: 40px; }
-    .pl-title small { font-size: 21px; }
-    .pl-price { font-size: 38px; }
-    .pg-intro h2 { font-size: 27px; }
-    .topbar { padding: 16px 20px; }
-    .nav { padding: 16px 20px 28px; }
-    .pg-cover .cover-brand { font-size: 36px; }
-    .pl-tight-hero .pl-title { font-size: 36px; }
-    .pl-tight-hero .pl-title small { font-size: 18px; }
-    .pl-tight-hero .pl-price { font-size: 34px; }
-  }
-  @media (max-width: 720px) {
-    :root {
-      --book-pad-x: 20px;
-      --book-chrome-y: 175px;
-    }
-    .cover-title { font-size: 46px; }
-    .cover-subtitle { font-size: 16px; }
-    .cover-tag { display: none; }
-    .pl-content { padding: 22px 22px 22px; }
-    .pl-tight-hero.pl-content { padding: 18px 22px 28px; }
-    .pl-tight-hero .pl-title { font-size: 32px; }
-    .pl-tight-hero .pl-title small { font-size: 17px; }
-    .pl-tight-hero .pl-price { font-size: 30px; }
-    .pg-intro { padding: 28px 22px; }
-    .pg-product-right { padding: 28px 22px; }
-    .pr-timeline { gap: 0; }
-    .model-thumb { width: 92px; min-height: 68px; }
-    .model-thumb img { min-height: 68px; }
-    .models-head-title { font-size: 22px; }
-    .model-name { font-size: 22px; }
-    .pg-models { padding: 24px 22px 28px; }
-  }
-  @media (max-height: 720px) {
-    :root {
-      --book-chrome-y: 170px;
-    }
-    .pl-title { font-size: 46px; }
-    .pl-title small { font-size: 23px; }
-    .pl-tight-hero .pl-title { font-size: 38px; }
-    .pl-tight-hero .pl-title small { font-size: 19px; }
-  }
-  @media (max-height: 640px) {
-    :root {
-      --book-chrome-y: 155px;
-    }
-    .pl-hero { height: 132px; }
-    .pl-tight-hero .pl-hero { height: 108px; }
-    .cover-title { font-size: 64px; }
-    .pl-title { font-size: 42px; }
-    .pl-tight-hero .pl-title { font-size: 36px; }
-  }
+  /* MEDIA QUERIES (REMOVED: El escalado ahora maneja la responsividad) */
 </style>
 </head>
 <body>
@@ -962,11 +931,26 @@
 </div>
 
 <div class="stage" id="stage">
-  <div class="book" id="book">
-    <div class="spine"></div>
-    <!-- Pages injected by JS -->
+  <div class="book-wrapper" id="book-wrapper">
+    <div class="book-scaler" id="book-scaler">
+      <div class="book" id="book">
+        <div class="spine"></div>
+        <!-- Pages injected by JS -->
+      </div>
+    </div>
   </div>
-  <p class="stage-hint">Rueda del ratón sobre el libro para pasar página · clic en el borde izquierdo o derecho del libro (evita enlaces)</p>
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="zoomOut()" title="Alejar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+    </button>
+    <button class="zoom-btn" onclick="zoomFit()" title="Ajustar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </button>
+    <button class="zoom-btn" onclick="zoomIn()" title="Acercar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+    </button>
+  </div>
+  <p class="stage-hint">Arrastra para mover el catálogo · Clic en el borde para pasar página</p>
 </div>
 
 <div class="nav">
@@ -1170,7 +1154,7 @@ const spreads = [
       <div class="pg-product-left page-face" style="display:flex;flex-direction:column;">
         <div class="pl-accent-bar" style="background: linear-gradient(to right, #00C896, #00A878);"></div>
         <div class="pl-hero"><img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80" alt="Comercio y catálogo móvil" loading="lazy" width="600" height="400"></div>
-        <div class="pl-content">
+        <div class="pl-content pl-tight-hero">
           <div class="nivel-header" style="background:rgba(0,200,150,0.12);color:var(--accent);">
             🟢 NIVEL 1 — PRESENCIA ESENCIAL
           </div>
@@ -1264,12 +1248,12 @@ const spreads = [
       <div class="pg-product-left page-face" style="display:flex;flex-direction:column;">
         <div class="pl-accent-bar" style="background: linear-gradient(to right, #F5A623, #E8921A);"></div>
         <div class="pl-hero"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&q=80" alt="Oficina y presencia corporativa" loading="lazy" width="600" height="400"></div>
-        <div class="pl-content">
+        <div class="pl-content pl-tight-hero">
           <div class="nivel-header" style="background:rgba(245,166,35,0.12);color:#F5A623;">
             🟡 NIVEL 2 — CRECIMIENTO PROFESIONAL
           </div>
           <div class="pl-eyebrow" style="color:#F5A623;">04 / Presencia Empresarial</div>
-          <div class="pl-title" style="font-size:46px;">
+          <div class="pl-title">
             <small>PLAN</small>
             WEB<br>CORPO<br>RATIVA
           </div>
@@ -1360,12 +1344,12 @@ const spreads = [
       <div class="pg-product-left page-face" style="display:flex;flex-direction:column;">
         <div class="pl-accent-bar" style="background: linear-gradient(to right, #F5A623, #E8921A);"></div>
         <div class="pl-hero"><img src="https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=900&q=80" alt="Mapa y visibilidad local" loading="lazy" width="600" height="400"></div>
-        <div class="pl-content">
+        <div class="pl-content pl-tight-hero">
           <div class="nivel-header" style="background:rgba(245,166,35,0.12);color:#F5A623;">
             🟡 NIVEL 2 — CRECIMIENTO PROFESIONAL
           </div>
           <div class="pl-eyebrow" style="color:#F5A623;">05 / Combo Estratégico</div>
-          <div class="pl-title" style="font-size:42px;">
+          <div class="pl-title">
             <small>COMBO</small>
             VISIBILI<br>DAD<br>LOCAL
           </div>
@@ -1444,12 +1428,12 @@ const spreads = [
       <div class="pg-product-left page-face" style="display:flex;flex-direction:column;">
         <div class="pl-accent-bar" style="background: linear-gradient(to right, #4A90E2, #2563EB);"></div>
         <div class="pl-hero"><img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=900&q=80" alt="Publicidad en redes sociales" loading="lazy" width="600" height="400"></div>
-        <div class="pl-content">
+        <div class="pl-content pl-tight-hero">
           <div class="nivel-header" style="background:rgba(74,144,226,0.12);color:#4A90E2;">
             🔵 NIVEL 3 — ESTRATEGIA RECURRENTE
           </div>
           <div class="pl-eyebrow" style="color:#4A90E2;">06 / Publicidad Digital</div>
-          <div class="pl-title" style="font-size:44px;line-height:0.92;">
+          <div class="pl-title">
             <small>PLAN</small>
             TRÁFICO<br>GARANTI<br>ZADO
           </div>
@@ -1534,12 +1518,12 @@ const spreads = [
       <div class="pg-product-left page-face" style="background:var(--dark);display:flex;flex-direction:column;">
         <div class="pl-accent-bar" style="background: linear-gradient(to right, #E24A90, #B5206B);"></div>
         <div class="pl-hero"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=900&q=80" alt="Equipo trabajando en lanzamiento digital" loading="lazy" width="600" height="400"></div>
-        <div class="pl-content">
+        <div class="pl-content pl-tight-hero">
           <div class="nivel-header" style="background:rgba(226,74,144,0.12);color:#E24A90;">
             🏆 PAQUETE ESTRELLA
           </div>
           <div class="pl-eyebrow" style="color:#E24A90;">09 / Todo Incluido</div>
-          <div class="pl-title" style="font-size:42px;line-height:0.92;">
+          <div class="pl-title">
             <small>PAQUETE</small>
             ACELERA<br>DOR<br>DIGITAL
           </div>
@@ -1808,6 +1792,46 @@ const THEME_NUDGE_MS = 120000;
 let themeNudgeTimer = null;
 let themeNudgeHideTimer = null;
 
+// Zoom state
+let currentZoom = 1;
+let baseScale = 1;
+const PAGE_W = 460;
+const PAGE_H = 660;
+
+function updateScale() {
+  const wrapper = document.getElementById('book-wrapper');
+  if (!wrapper) return;
+  
+  const ww = wrapper.clientWidth;
+  const wh = wrapper.clientHeight;
+  const bw = PAGE_W * 2;
+  const bh = PAGE_H;
+  
+  const padding = 40;
+  const scaleX = (ww - padding) / bw;
+  const scaleY = (wh - padding) / bh;
+  
+  baseScale = Math.min(scaleX, scaleY, 1.5); 
+  applyZoom();
+}
+
+function applyZoom() {
+  const scaler = document.getElementById('book-scaler');
+  const book = document.getElementById('book');
+  if (!scaler || !book) return;
+  
+  const totalScale = baseScale * currentZoom;
+  scaler.style.width = `${PAGE_W * 2 * totalScale}px`;
+  scaler.style.height = `${PAGE_H * totalScale}px`;
+  book.style.transform = `scale(${totalScale})`;
+}
+
+function zoomIn() { currentZoom += 0.25; applyZoom(); }
+function zoomOut() { currentZoom = Math.max(0.5, currentZoom - 0.25); applyZoom(); }
+function zoomFit() { currentZoom = 1; updateScale(); }
+
+window.addEventListener('resize', updateScale);
+
 function updateThemeToggleIcon() {
   const icon = document.getElementById('theme-toggle-icon');
   if (!icon) return;
@@ -1938,6 +1962,7 @@ function initBook() {
   currentSpread = 0;
   renderDots();
   updateDisplay();
+  updateScale();
 }
 
 function turnPage(dir) {
@@ -2009,6 +2034,40 @@ document.addEventListener('keydown', (e) => {
 const stageEl = document.getElementById('stage');
 stageEl.addEventListener('wheel', onBookWheel, { passive: false });
 stageEl.addEventListener('mousedown', onStagePointerDown);
+
+// Panning
+let isDragging = false;
+let startX, startY, scrollLeft, scrollTop;
+const wrapper = document.getElementById('book-wrapper');
+if (wrapper) {
+  wrapper.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button') || e.target.closest('.nav')) return;
+    isDragging = true;
+    wrapper.style.cursor = 'grabbing';
+    startX = e.pageX - wrapper.offsetLeft;
+    startY = e.pageY - wrapper.offsetTop;
+    scrollLeft = wrapper.scrollLeft;
+    scrollTop = wrapper.scrollTop;
+  });
+  wrapper.addEventListener('mouseleave', () => {
+    isDragging = false;
+    wrapper.style.cursor = 'grab';
+  });
+  wrapper.addEventListener('mouseup', () => {
+    isDragging = false;
+    wrapper.style.cursor = 'grab';
+  });
+  wrapper.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - wrapper.offsetLeft;
+    const y = e.pageY - wrapper.offsetTop;
+    const walkX = (x - startX) * 1.5;
+    const walkY = (y - startY) * 1.5;
+    wrapper.scrollLeft = scrollLeft - walkX;
+    wrapper.scrollTop = scrollTop - walkY;
+  });
+}
 
 document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
